@@ -4,7 +4,7 @@ Eine intelligente Anwendung zur Budget- und Finanzverwaltung mit KI-Unterstützu
 
 ---
 
-## 📱 Projektstruktur
+## Projektstruktur
 
 Das Repository ist übersichtlich aufgebaut. Der Quellcode der mobilen Anwendung, die detaillierte Projektdokumentation sowie Screenshots befinden sich im Ordner `mobileApp`:
 
