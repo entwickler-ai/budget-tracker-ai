@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BudgetTrackerAI API & Chat Tester</title>
+    <style>
+        /* Unveränderter CSS-Code bleibt gleich */
+        :root {
+            --primary: #0071e3;
+            --primary-gradient: linear-gradient(135deg, #0071e3 0%, #56CCF2 100%);
+            --secondary: #6c63ff;
+            --background: #0a0b1a;
+            --card-bg: rgba(16, 18, 35, 0.85);
+            --text: #ffffff;
+            --subtle-text: #a2a3b9;
+            --shadow: 0 8px 32px rgba(0, 113, 227, 0.25);
+            --error: #ff4d6b;
+            --success: #3adc9f;
+            --border-radius: 16px;
+            --glow: 0 0 15px rgba(0, 113, 227, 0.5);
+            --input-bg: rgba(255, 255, 255, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'SF Pro Display', 'Segoe UI', sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            line-height: 1.6;
+            font-weight: 400;
+            letter-spacing: -0.022em;
+            padding: 20px;
+            background-image:
+                    radial-gradient(circle at 20% 30%, rgba(108, 99, 255, 0.2) 0%, transparent 30%),
+                    radial-gradient(circle at 80% 70%, rgba(0, 113, 227, 0.2) 0%, transparent 30%);
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            background: var(--card-bg);
+            backdrop-filter: blur(15px);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            margin: 0 auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            border-radius: calc(var(--border-radius) + 5px);
+            background: var(--primary-gradient);
+            z-index: -1;
+            opacity: 0.3;
+            filter: blur(15px);
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(-3px);
+        }
+
+        h1 {
+            font-size: clamp(28px, 5vw, 36px);
+            font-weight: 700;
+            margin-bottom: 30px;
+            text-align: center;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.03em;
+            position: relative;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            width: 80px;
+            height: 4px;
+            background: var(--primary-gradient);
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: var(--text);
+            letter-spacing: 0.5px;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 14px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            font-size: 16px;
+            background: var(--input-bg);
+            color: var(--text);
+            transition: all 0.3s ease;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(0, 113, 227, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        button {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            padding: 16px 30px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 113, 227, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                    90deg,
+                    transparent,
+                    rgba(255, 255, 255, 0.2),
+                    transparent
+            );
+            transition: 0.5s;
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        .response-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 11, 26, 0.8);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .response-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .response-dropdown {
+            background: rgba(16, 18, 35, 0.85);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translateY(30px);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+            position: relative;
+        }
+
+        .response-overlay.show .response-dropdown {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .response-content {
+            font-size: 17px;
+            line-height: 1.6;
+            word-wrap: break-word;
+            max-height: 50vh;
+            overflow-y: auto;
+            padding-right: 10px;
+            margin-bottom: 20px;
+        }
+
+        .response-content.success {
+            color: var(--success);
+        }
+
+        .response-content.error {
+            color: var(--error);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--text);
+            border-radius: 50px;
+            padding: 12px 30px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            box-shadow: var(--shadow);
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-gradient);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 113, 227, 0.3);
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 14px;
+            color: var(--subtle-text);
+            text-align: center;
+        }
+
+        pre {
+            text-align: left;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-x: auto;
+            max-width: 100%;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        pre .highlight {
+            color: #56CCF2;
+        }
+
+        pre .warning {
+            color: #FF8A65;
+        }
+
+        .glow-effect {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: var(--primary);
+            filter: blur(80px);
+            opacity: 0.15;
+            z-index: -1;
+        }
+
+        .glow-1 {
+            top: -50px;
+            left: -50px;
+            background: var(--primary);
+        }
+
+        .glow-2 {
+            bottom: -50px;
+            right: -50px;
+            background: var(--secondary);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
+            font-size: 18px;
+        }
+
+        .response-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .response-title {
+            font-size: 22px;
+            font-weight: 600;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .pill.success {
+            background: rgba(58, 220, 159, 0.15);
+            color: var(--success);
+        }
+
+        .pill.error {
+            background: rgba(255, 77, 107, 0.15);
+            color: var(--error);
+        }
+
+        .chat-container {
+            display: none;
+            flex-direction: column;
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px 12px 0 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: none;
+        }
+
+        .chat-input-container {
+            display: flex;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0 0 12px 12px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .chat-input {
+            width: 50%;
+            padding: 11px 15px;
+            border: none;
+            background: transparent;
+            color: var(--text);
+            font-size: 16px;
+        }
+
+        .chat-input:focus {
+            outline: none;
+        }
+
+        .send-btn {
+            width: 50%;
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .send-btn svg {
+            width: 24px;
+            height: 24px;
+            stroke: white;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 15px;
+            border-radius: 12px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .user-message {
+            background: rgba(0, 113, 227, 0.2);
+            margin-left: auto;
+            border-radius: 12px 12px 0 12px;
+        }
+
+        .bot-message {
+            background: rgba(255, 255, 255, 0.1);
+            margin-right: auto;
+            border-radius: 12px 12px 12px 0;
+        }
+
+        .chat-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .chat-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: center;
+            border: none;
+        }
+
+        .continue-chat {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        .close-chat {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+                margin-bottom: 25px;
+            }
+
+            .back-button {
+                top: 15px;
+                left: 15px;
+                padding: 6px 12px;
+                font-size: 13px;
+            }
+
+            label {
+                font-size: 15px;
+            }
+
+            input, textarea, select {
+                font-size: 15px;
+                padding: 12px 16px;
+            }
+
+            button {
+                font-size: 16px;
+                padding: 14px 24px;
+            }
+
+            pre {
+                font-size: 13px;
+                padding: 15px;
+            }
+
+            .response-dropdown {
+                padding: 20px;
+            }
+
+            .response-title {
+                font-size: 18px;
+            }
+
+            .btn-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+                border-radius: 12px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .form-group {
+                margin-bottom: 20px;
+            }
+
+            .response-content {
+                font-size: 15px;
+            }
+
+            .btn {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="glow-effect glow-1"></div>
+    <div class="glow-effect glow-2"></div>
+
+    <div class="back-button" onclick="location.href='/assets/html/test.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>Zurück</span>
+    </div>
+
+    <h1>BudgetTrackerAI API Tester</h1>
+
+    <pre>
+<span class="highlight">YOUR_API_KEY:</span> AIzaSyATH7IANLMmUt6gFU0a-WalIJUc8ZVRco8
+<span class="highlight">User ID:</span> x9MAIprT1lhWOytiDNyG0rmC4Kp2
+
+<span class="warning">Firebase Auth Token abrufen (Postman):</span>
+
+POST: https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=<span class="highlight">YOUR_API_KEY</span>
+{
+  "email": "admin@fh.de",
+  "password": "adminfh",
+  "returnSecureToken": true
+}</pre>
+
+    <div class="form-group">
+        <label for="authToken">Firebase Auth Token</label>
+        <input type="text" id="authToken" placeholder="Geben Sie Ihren Firebase Auth Token ein" required aria-label="Firebase Authentication Token">
+    </div>
+    <div class="form-group">
+        <label for="endpoint">API Endpoint</label>
+        <select id="endpoint" onchange="renderFormFields()">
+            <option value="POST /api/insights">POST /api/insights</option>
+            <option value="GET /api/insights">GET /api/insights</option>
+            <option value="POST /api/transactions">POST /api/transactions</option>
+            <option value="PUT /api/transactions/:id">PUT /api/transactions/:id</option>
+            <option value="DELETE /api/transactions/:id">DELETE /api/transactions/:id</option>
+            <option value="GET /api/transactions">GET /api/transactions</option> <!-- Neuer Endpunkt -->
+            <option value="POST /api/budgets">POST /api/budgets</option>
+            <option value="PUT /api/budgets/:id">PUT /api/budgets/:id</option>
+            <option value="DELETE /api/budgets/:id">DELETE /api/budgets/:id</option>
+            <option value="GET /api/budgets">GET /api/budgets</option> <!-- Neuer Endpunkt -->
+        </select>
+    </div>
+    <div id="dynamicForm" class="form-group"></div>
+    <button onclick="testApi()">Anfrage senden</button>
+
+    <div id="chatContainer" class="chat-container">
+        <div id="chatMessages" class="chat-messages"></div>
+        <div class="chat-input-container">
+            <input type="text" id="chatInput" class="chat-input" placeholder="Schreiben Sie Ihre Nachricht..." aria-label="Chat Nachricht">
+            <button class="send-btn" onclick="sendChatMessage()" aria-label="Nachricht senden">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13"
+                          stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </div>
+        <div class="chat-buttons">
+            <button class="chat-btn close-chat" onclick="closeChat()">Chat schließen</button>
+        </div>
+    </div>
+
+    <div class="footer">
+        BudgetTrackerAI © 2025
+    </div>
+</div>
+
+<div class="response-overlay" id="responseOverlay">
+    <div class="response-dropdown">
+        <div class="response-header">
+            <div class="response-title">API Antwort</div>
+            <div id="responseStatus"></div>
+        </div>
+        <div class="response-content" id="responseContent"></div>
+        <div class="btn-group">
+            <button class="btn" onclick="closeResponse()">Schließen</button>
+            <button class="btn btn-primary" onclick="continueToChat()">Weiter chatten</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const categories = [
+        'Food & Dining', 'Transportation', 'Housing', 'Utilities', 'Entertainment', 'Shopping',
+        'Salary', 'Investment Income', 'Healthcare', 'Education', 'Travel', 'Insurance',
+        'Groceries', 'Dining Out', 'Public Transport', 'Fuel', 'Rent', 'Mortgage',
+        'Electricity', 'Water', 'Internet', 'Phone', 'Movies & Shows', 'Clothing',
+        'Electronics', 'Freelance Income', 'Bonus', 'Medical Expenses', 'Tuition',
+        'Books & Supplies', 'Vacation', 'Flights', 'Car Insurance', 'Health Insurance',
+        'Miscellaneous'
+    ];
+
+    function renderFormFields() {
+        const endpoint = document.getElementById('endpoint').value;
+        const dynamicForm = document.getElementById('dynamicForm');
+        dynamicForm.innerHTML = '';
+
+        const userIdField = `
+            <div class="form-group">
+                <label for="userId">User ID</label>
+                <input type="text" id="userId" value="x9MAIprT1lhWOytiDNyG0rmC4Kp2" placeholder="Geben Sie Ihre User ID ein" required aria-label="User ID">
+            </div>
+        `;
+
+        if (endpoint === 'POST /api/insights') {
+            dynamicForm.innerHTML = `
+                ${userIdField}
+                <div class="form-group">
+                    <label for="query">Finanzielle oder allgemeine Anfrage</label>
+                    <textarea id="query" placeholder="z.B., Wie viel kann ich für Lebensmittel ausgeben? Oder: Erzähl mir einen Witz!" required aria-label="Anfrage"></textarea>
+                </div>
+            `;
+        } else if (endpoint === 'GET /api/insights') {
+            dynamicForm.innerHTML = userIdField;
+        } else if (endpoint === 'POST /api/transactions') {
+            dynamicForm.innerHTML = `
+                ${userIdField}
+                <div class="form-group">
+                    <label for="amount">Betrag</label>
+                    <input type="number" id="amount" placeholder="z.B., 100.50" step="0.01" required aria-label="Betrag">
+                </div>
+                <div class="form-group">
+                    <label for="category">Kategorie</label>
+                    <select id="category" required aria-label="Kategorie">
+                        ${categories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="type">Typ</label>
+                    <select id="type" required aria-label="Typ">
+                        <option value="income">Einnahme</option>
+                        <option value="expense">Ausgabe</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="description">Beschreibung</label>
+                    <input type="text" id="description" placeholder="z.B., Supermarkt Einkauf" aria-label="Beschreibung">
+                </div>
+                <div class="form-group">
+                    <label for="date">Datum</label>
+                    <input type="datetime-local" id="date" required aria-label="Datum">
+                </div>
+            `;
+        } else if (endpoint === 'PUT /api/transactions/:id' || endpoint === 'DELETE /api/transactions/:id') {
+            dynamicForm.innerHTML = `
+                ${userIdField}
+                <div class="form-group">
+                    <label for="transactionId">Transaktions-ID</label>
+                    <input type="text" id="transactionId" placeholder="Geben Sie die Transaktions-ID ein" required aria-label="Transaktions-ID">
+                </div>
+                ${endpoint === 'PUT /api/transactions/:id' ? `
+                <div class="form-group">
+                    <label for="amount">Betrag</label>
+                    <input type="number" id="amount" placeholder="z.B., 100.50" step="0.01" required aria-label="Betrag">
+                </div>
+                <div class="form-group">
+                    <label for="category">Kategorie</label>
+                    <select id="category" required aria-label="Kategorie">
+                        ${categories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="type">Typ</label>
+                    <select id="type" required aria-label="Typ">
+                        <option value="income">Einnahme</option>
+                        <option value="expense">Ausgabe</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="description">Beschreibung</label>
+                    <input type="text" id="description" placeholder="z.B., Supermarkt Einkauf" aria-label="Beschreibung">
+                </div>
+                <div class="form-group">
+                    <label for="date">Datum</label>
+                    <input type="datetime-local" id="date" required aria-label="Datum">
+                </div>
+                ` : ''}
+            `;
+        } else if (endpoint === 'GET /api/transactions' || endpoint === 'GET /api/budgets') {
+            dynamicForm.innerHTML = `
+                ${userIdField}
+                <div class="form-group">
+                    <label for="startDate">Startdatum (optional)</label>
+                    <input type="datetime-local" id="startDate" aria-label="Startdatum">
+                </div>
+                <div class="form-group">
+                    <label for="endDate">Enddatum (optional)</label>
+                    <input type="datetime-local" id="endDate" aria-label="Enddatum">
+                </div>
+            `;
+        } else if (endpoint === 'POST /api/budgets') {
+            dynamicForm.innerHTML = `
+                ${userIdField}
+                <div class="form-group">
+                    <label for="category">Kategorie</label>
+                    <select id="category" required aria-label="Kategorie">
+                        ${categories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="limit">Limit</label>
+                    <input type="number" id="limit" placeholder="z.B., 200.00" step="0.01" required aria-label="Limit">
+                </div>
+                <div class="form-group">
+                    <label for="period">Periode</label>
+                    <select id="period" required aria-label="Periode">
+                        <option value="weekly">Wöchentlich</option>
+                        <option value="monthly">Monatlich</option>
+                        <option value="yearly">Jährlich</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="startDate">Startdatum</label>
+                    <input type="datetime-local" id="startDate" required aria-label="Startdatum">
+                </div>
+            `;
+        } else if (endpoint === 'PUT /api/budgets/:id' || endpoint === 'DELETE /api/budgets/:id') {
+            dynamicForm.innerHTML = `
+                ${userIdField}
+                <div class="form-group">
+                    <label for="budgetId">Budget-ID</label>
+                    <input type="text" id="budgetId" placeholder="Geben Sie die Budget-ID ein" required aria-label="Budget-ID">
+                </div>
+                ${endpoint === 'PUT /api/budgets/:id' ? `
+                <div class="form-group">
+                    <label for="category">Kategorie</label>
+                    <select id="category" required aria-label="Kategorie">
+                        ${categories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="limit">Limit</label>
+                    <input type="number" id="limit" placeholder="z.B., 200.00" step="0.01" required aria-label="Limit">
+                </div>
+                <div class="form-group">
+                    <label for="period">Periode</label>
+                    <select id="period" required aria-label="Periode">
+                        <option value="weekly">Wöchentlich</option>
+                        <option value="monthly">Monatlich</option>
+                        <option value="yearly">Jährlich</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="startDate">Startdatum</label>
+                    <input type="datetime-local" id="startDate" required aria-label="Startdatum">
+                </div>
+                ` : ''}
+            `;
+        }
+    }
+
+    async function testApi() {
+        const authToken = document.getElementById('authToken').value.trim();
+        const endpoint = document.getElementById('endpoint').value;
+        const userId = document.getElementById('userId')?.value.trim();
+        if (!authToken) {
+            showResponse('error', 'Bitte geben Sie einen Firebase Auth Token ein.');
+            return;
+        }
+
+        showResponse('loading', '');
+
+        try {
+            const [method, path] = endpoint.split(' ');
+            let url = path;
+            let body = {};
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            };
+
+            if (method === 'POST' && path === '/api/insights') {
+                const query = document.getElementById('query')?.value.trim();
+                if (!userId || !query) {
+                    showResponse('error', 'Bitte füllen Sie User ID und Anfrage aus.');
+                    return;
+                }
+                body = { query, userId };
+            } else if (method === 'GET' && path === '/api/insights') {
+                if (!userId) {
+                    showResponse('error', 'Bitte füllen Sie User ID aus.');
+                    return;
+                }
+                url = `${path}?userId=${encodeURIComponent(userId)}`;
+            } else if (method === 'POST' && path === '/api/transactions') {
+                const amount = parseFloat(document.getElementById('amount')?.value);
+                const category = document.getElementById('category')?.value;
+                const type = document.getElementById('type')?.value;
+                const description = document.getElementById('description')?.value.trim();
+                const date = document.getElementById('date')?.value;
+                if (!userId || isNaN(amount) || !category || !type || !date) {
+                    showResponse('error', 'Bitte füllen Sie alle Pflichtfelder aus.');
+                    return;
+                }
+                body = { userId, amount, category, type, description, date };
+            } else if (method === 'PUT' && path === '/api/transactions/:id') {
+                const transactionId = document.getElementById('transactionId')?.value.trim();
+                const amount = parseFloat(document.getElementById('amount')?.value);
+                const category = document.getElementById('category')?.value;
+                const type = document.getElementById('type')?.value;
+                const description = document.getElementById('description')?.value.trim();
+                const date = document.getElementById('date')?.value;
+                if (!userId || !transactionId || isNaN(amount) || !category || !type || !date) {
+                    showResponse('error', 'Bitte füllen Sie alle Pflichtfelder aus.');
+                    return;
+                }
+                url = `/api/transactions/${transactionId}`;
+                body = { userId, amount, category, type, description, date };
+            } else if (method === 'DELETE' && path === '/api/transactions/:id') {
+                const transactionId = document.getElementById('transactionId')?.value.trim();
+                if (!userId || !transactionId) {
+                    showResponse('error', 'Bitte füllen Sie User ID und Transaktions-ID aus.');
+                    return;
+                }
+                url = `/api/transactions/${transactionId}`;
+            } else if (method === 'GET' && path === '/api/transactions') {
+                if (!userId) {
+                    showResponse('error', 'Bitte füllen Sie User ID aus.');
+                    return;
+                }
+                const startDate = document.getElementById('startDate')?.value;
+                const endDate = document.getElementById('endDate')?.value;
+                const queryParams = new URLSearchParams({ userId });
+                if (startDate) queryParams.append('startDate', startDate);
+                if (endDate) queryParams.append('endDate', endDate);
+                url = `${path}?${queryParams.toString()}`;
+            } else if (method === 'POST' && path === '/api/budgets') {
+                const category = document.getElementById('category')?.value;
+                const limit = parseFloat(document.getElementById('limit')?.value);
+                const period = document.getElementById('period')?.value;
+                const startDate = document.getElementById('startDate')?.value;
+                if (!userId || !category || isNaN(limit) || !period || !startDate) {
+                    showResponse('error', 'Bitte füllen Sie alle Pflichtfelder aus.');
+                    return;
+                }
+                body = { userId, category, limit, period, startDate };
+            } else if (method === 'PUT' && path === '/api/budgets/:id') {
+                const budgetId = document.getElementById('budgetId')?.value.trim();
+                const category = document.getElementById('category')?.value;
+                const limit = parseFloat(document.getElementById('limit')?.value);
+                const period = document.getElementById('period')?.value;
+                const startDate = document.getElementById('startDate')?.value;
+                if (!userId || !budgetId || !category || isNaN(limit) || !period || !startDate) {
+                    showResponse('error', 'Bitte füllen Sie alle Pflichtfelder aus.');
+                    return;
+                }
+                url = `/api/budgets/${budgetId}`;
+                body = { userId, category, limit, period, startDate };
+            } else if (method === 'DELETE' && path === '/api/budgets/:id') {
+                const budgetId = document.getElementById('budgetId')?.value.trim();
+                if (!userId || !budgetId) {
+                    showResponse('error', 'Bitte füllen Sie User ID und Budget-ID aus.');
+                    return;
+                }
+                url = `/api/budgets/${budgetId}`;
+            } else if (method === 'GET' && path === '/api/budgets') {
+                if (!userId) {
+                    showResponse('error', 'Bitte füllen Sie User ID aus.');
+                    return;
+                }
+                const startDate = document.getElementById('startDate')?.value;
+                const endDate = document.getElementById('endDate')?.value;
+                const queryParams = new URLSearchParams({ userId });
+                if (startDate) queryParams.append('startDate', startDate);
+                if (endDate) queryParams.append('endDate', endDate);
+                url = `${path}?${queryParams.toString()}`;
+            }
+
+            const fetchOptions = {
+                method,
+                headers,
+                ...(Object.keys(body).length > 0 && { body: JSON.stringify(body) })
+            };
+
+            const response = await fetch(url, fetchOptions);
+            const data = await response.json();
+
+            if (response.ok) {
+                showResponse('success', JSON.stringify(data, null, 2) || 'Erfolg: Keine Ergebnisse zurückgegeben.');
+                window.lastApiResponse = JSON.stringify(data, null, 2) || 'Keine Ergebnisse zurückgegeben.';
+            } else {
+                showResponse('error', `Fehler: ${data.error || 'Unbekannter Fehler aufgetreten.'}`);
+            }
+        } catch (error) {
+            showResponse('error', `Fehler: ${error.message || 'Netzwerkfehler aufgetreten.'}`);
+        }
+    }
+
+    function showResponse(type, message) {
+        const responseOverlay = document.getElementById('responseOverlay');
+        const responseContent = document.getElementById('responseContent');
+        const responseStatus = document.getElementById('responseStatus');
+
+        responseStatus.innerHTML = '';
+
+        if (type === 'loading') {
+            responseContent.innerHTML = '<div class="loading-text"><div class="loading"></div>Anfrage wird verarbeitet...</div>';
+            responseContent.className = 'response-content';
+        } else {
+            responseContent.textContent = message;
+            responseContent.className = `response-content ${type}`;
+
+            if (type === 'success') {
+                responseStatus.innerHTML = '<span class="pill success">Erfolg</span>';
+            } else if (type === 'error') {
+                responseStatus.innerHTML = '<span class="pill error">Fehler</span>';
+            }
+        }
+
+        responseOverlay.classList.add('show');
+    }
+
+    function closeResponse() {
+        const responseOverlay = document.getElementById('responseOverlay');
+        responseOverlay.classList.remove('show');
+    }
+
+    function continueToChat() {
+        closeResponse();
+
+        const chatContainer = document.getElementById('chatContainer');
+        chatContainer.style.display = 'flex';
+
+        if (window.lastApiResponse) {
+            addMessage(JSON.parse(window.lastApiResponse).result || window.lastApiResponse, 'bot');
+        }
+
+        document.getElementById('chatInput').focus();
+    }
+
+    function addMessage(text, sender) {
+        const chatMessages = document.getElementById('chatMessages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}-message`;
+        messageDiv.textContent = text;
+        chatMessages.appendChild(messageDiv);
+
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    async function sendChatMessage() {
+        const chatInput = document.getElementById('chatInput');
+        const message = chatInput.value.trim();
+        const authToken = document.getElementById('authToken').value.trim();
+        const userId = document.getElementById('userId')?.value.trim() || 'x9MAIprT1lhWOytiDNyG0rmC4Kp2';
+
+        if (!message) return;
+        if (!authToken) {
+            addMessage('Bitte geben Sie einen Firebase Auth Token ein.', 'bot');
+            return;
+        }
+        if (!userId) {
+            addMessage('Bitte geben Sie eine User ID ein.', 'bot');
+            return;
+        }
+
+        addMessage(message, 'user');
+        chatInput.value = '';
+
+        try {
+            const response = await fetch('/api/insights', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify({
+                    query: message,
+                    userId: userId
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                addMessage(data.result || 'Erfolg: Keine Ergebnisse zurückgegeben.', 'bot');
+            } else {
+                addMessage(`Fehler: ${data.error || 'Unbekannter Fehler aufgetreten.'}`, 'bot');
+            }
+        } catch (error) {
+            addMessage(`Fehler: ${error.message || 'Netzwerkfehler aufgetreten.'}`, 'bot');
+        }
+    }
+
+    function closeChat() {
+        const chatContainer = document.getElementById('chatContainer');
+        chatContainer.style.display = 'none';
+        document.getElementById('chatMessages').innerHTML = '';
+    }
+
+    document.getElementById('chatInput').addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            sendChatMessage();
+        }
+    });
+
+    document.getElementById('responseOverlay').addEventListener('click', function(event) {
+        if (event.target === this) {
+            closeResponse();
+        }
+    });
+
+    renderFormFields();
+</script>
+</body>
+</html>

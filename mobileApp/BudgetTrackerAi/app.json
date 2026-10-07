@@ -1,0 +1,37 @@
+{
+  "expo": {
+    "jsEngine": "jsc",
+    "name": "BudgetTrackerAi",
+    "slug": "budgettrackerai",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./src/assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "platforms": ["ios", "android", "web"],
+
+    "splash": {
+      "image": "./src/assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#000000"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Diese App benötigt Mikrofonzugriff für die Spracherkennung.",
+        "NSSpeechRecognitionUsageDescription": "Diese App benötigt Zugriff auf die Spracherkennung, um deine Stimme in Text umzuwandeln."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/adaptive-icon.png",
+        "backgroundColor": "#000000"
+      },
+      "edgeToEdgeEnabled": true,
+      "permissions": ["android.permission.RECORD_AUDIO"]
+    },
+    "web": {
+      "favicon": "./src/assets/favicon.png"
+    }
+  }
+}

@@ -1,0 +1,66 @@
+Firebase Database Indexe:
+Sammlungs-ID	Indexierte Felder	Abfragebereich		Status	
+budgets	userId Aufsteigend startDate Absteigend __name__ Absteigend	Sammlung		Aktiviert	
+transactions	userId Aufsteigend date Absteigend __name__ Absteigend	Sammlung		Aktiviert	
+
+
+Firebase Database Regeln:
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Check if the user is an admin
+    function isAdmin() {
+      return request.auth != null && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+    }
+    
+    // Allow users to create their own document, read, and update specific fields
+    match /users/{user} {
+      // Allow creating a new user document if the user is authenticated and matches the document ID
+      allow create: if request.auth != null && 
+                       request.auth.uid == user &&
+                       request.resource.data.keys().hasOnly(['uid', 'email', 'name', 'role', 'createdAt']) &&
+                       request.resource.data.uid == request.auth.uid &&
+                       request.resource.data.email == request.auth.token.email &&
+                       request.resource.data.role == 'USER' &&
+                       request.resource.data.createdAt is timestamp;
+      // Split read and update for clarity
+      allow read: if request.auth != null && request.auth.uid == user;
+      allow update: if request.auth != null && request.auth.uid == user &&
+                       request.resource.data.keys().hasOnly(['uid', 'email', 'name', 'role', 'createdAt']) &&
+                       (isAdmin() || request.resource.data.role == resource.data.role);
+      allow read, write: if isAdmin();
+    }
+    
+    // Allow Conversation save
+    match /conversations/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    // Transactions: Allow read/write if userId matches
+    match /transactions/{transaction} {
+      allow read, update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+
+    // Budgets: Allow read/write if userId matches, and allow queries filtered by userId
+    match /budgets/{budget} {
+      allow read, update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      // Allow collection queries where userId matches the authenticated user's uid
+      allow get: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow list: if request.auth != null && request.query.userId == request.auth.uid;
+    }
+
+    // Admin-only functions
+    match /admin/{adminId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Default deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
